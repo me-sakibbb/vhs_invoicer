@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vital Health Solution — Sales Invoice Generator</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Left Sidebar: Interactive Input Controls (Hidden on Print) -->
+    <aside class="editor-panel no-print">
+      <header class="editor-header">
+        <div class="editor-brand">
+          <img src="logo.png" alt="VHS Logo" class="editor-brand-logo" />
+          <div>
+            <h1>VHS Invoice Generator</h1>
+            <p>Vital Health Solution • BDT (৳)</p>
+          </div>
+        </div>
+        <div class="editor-actions">
+          <button type="button" id="btnReset" class="btn btn-secondary" title="Reset form for a new invoice">
+            New Invoice
+          </button>
+          <button type="button" id="btnPrint" class="btn btn-primary">
+            Print / Save PDF
+          </button>
+        </div>
+      </header>
+
+      <div class="editor-body">
+        <!-- Customer / Bill To Details -->
+        <section class="form-card">
+          <div class="form-card-header">
+            <h2>Bill To / Customer Details</h2>
+            <span class="badge-required">Required</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="customerName">Customer / Institution</label>
+              <input
+                type="text"
+                id="customerName"
+                placeholder="Enter customer or institution name"
+                autocomplete="off"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="customerAddress">Address</label>
+              <textarea
+                id="customerAddress"
+                rows="2"
+                placeholder="Enter customer address"
+              ></textarea>
+            </div>
+            <div class="form-group full-width">
+              <label for="customerContact">Contact / VAT-BIN</label>
+              <input
+                type="text"
+                id="customerContact"
+                placeholder="Enter phone, email, or customer VAT-BIN"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- Invoice Details -->
+        <section class="form-card">
+          <div class="form-card-header">
+            <h2>Invoice Details</h2>
+          </div>
+          <div class="form-grid two-col">
+            <div class="form-group">
+              <label for="invoiceNo">Invoice No.</label>
+              <input
+                type="text"
+                id="invoiceNo"
+                value="INV-2026-001"
+                placeholder="INV-2026-001"
+              />
+            </div>
+            <div class="form-group">
+              <label for="invoiceDate">Invoice Date</label>
+              <input type="date" id="invoiceDate" />
+            </div>
+            <div class="form-group">
+              <label for="paymentTerms">Payment Terms</label>
+              <input
+                type="text"
+                id="paymentTerms"
+                list="paymentTermsOptions"
+                value="Cash / Bank Transfer"
+                placeholder="Cash / Bank Transfer"
+              />
+              <datalist id="paymentTermsOptions">
+                <option value="Cash / Bank Transfer"></option>
+                <option value="Cash"></option>
+                <option value="Bank Transfer"></option>
+                <option value="Cheque"></option>
+                <option value="Credit"></option>
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="currency">Currency (Fixed)</label>
+              <input type="text" id="currency" value="BDT (৳)" readonly class="input-readonly" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Line Items Section -->
+        <section class="form-card">
+          <div class="form-card-header">
+            <h2>Line Items (Products)</h2>
+            <button type="button" id="btnAddRow" class="btn btn-sm btn-accent">
+              + Add Product Row
+            </button>
+          </div>
+          <div class="line-items-editor-header">
+            <span class="col-sl">#</span>
+            <span class="col-prod">Product Name / Description</span>
+            <span class="col-qty">Qty</span>
+            <span class="col-price">Unit Price (৳)</span>
+            <span class="col-disc">Discount (৳)</span>
+            <span class="col-total">Total (৳)</span>
+            <span class="col-act"></span>
+          </div>
+          <div id="lineItemsContainer" class="line-items-container">
+            <!-- Dynamically populated product input rows -->
+          </div>
+        </section>
+
+        <!-- Summary, VAT, Payment & Notes -->
+        <section class="form-card">
+          <div class="form-card-header">
+            <h2>Totals, VAT &amp; Notes</h2>
+          </div>
+          <div class="form-grid two-col">
+            <div class="form-group">
+              <label for="vatRate">VAT Rate (%)</label>
+              <input
+                type="number"
+                id="vatRate"
+                min="0"
+                max="100"
+                step="0.01"
+                value="0"
+              />
+            </div>
+            <div class="form-group">
+              <label for="amountPaid">Amount Paid (৳)</label>
+              <input
+                type="number"
+                id="amountPaid"
+                min="0"
+                step="0.01"
+                value="0"
+              />
+            </div>
+            <div class="form-group full-width">
+              <div class="label-with-toggle">
+                <label for="amountInWordsInput">Amount in Words</label>
+                <label class="checkbox-inline">
+                  <input type="checkbox" id="autoWordsToggle" checked />
+                  Auto-calculate from Grand Total
+                </label>
+              </div>
+              <input
+                type="text"
+                id="amountInWordsInput"
+                readonly
+                class="input-readonly"
+                placeholder="Zero Taka Only"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="invoiceNotes">Notes / Remarks</label>
+              <textarea id="invoiceNotes" rows="2">Please verify product details, prices, VAT rate and applicable tax requirements before issuing.</textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Fixed Seller Details (Collapsible / Editable if needed) -->
+        <details class="form-card details-card">
+          <summary class="form-card-header clickable-summary">
+            <h2>Seller Details (Fixed Default)</h2>
+            <span class="summary-hint">Click to view / edit VAT-BIN</span>
+          </summary>
+          <div class="form-grid two-col details-content">
+            <div class="form-group full-width">
+              <label for="sellerVatBin">Seller VAT/BIN No.</label>
+              <input
+                type="text"
+                id="sellerVatBin"
+                placeholder="Leave blank to display N/A"
+                value=""
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="sellerCompany">Company Name (Fixed)</label>
+              <input
+                type="text"
+                id="sellerCompany"
+                value="Vital Health Solution"
+                readonly
+                class="input-readonly"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="sellerAddress">Address (Fixed)</label>
+              <input
+                type="text"
+                id="sellerAddress"
+                value="Icon Court, House No# 14, Block-B, Avenue-2, Chandrima Model Town, Mohammadpur, Dhaka-1207, Bangladesh"
+                readonly
+                class="input-readonly"
+              />
+            </div>
+            <div class="form-group full-width">
+              <label for="sellerContact">Phone / Email (Fixed)</label>
+              <input
+                type="text"
+                id="sellerContact"
+                value="+88 01341-893323 | info@vitalhealthsolutionbd.com"
+                readonly
+                class="input-readonly"
+              />
+            </div>
+          </div>
+        </details>
+      </div>
+    </aside>
+
+    <!-- Right Area: Live A4 Invoice Sheet Preview & Print Target -->
+    <main class="preview-workspace">
+      <div class="preview-toolbar no-print">
+        <span class="preview-status">Live A4 Print Preview</span>
+        <span class="preview-tip">Tip: In the Print dialog, set Margins to "Default" or "None" and enable "Background graphics".</span>
+      </div>
+
+      <div class="invoice-sheet" id="invoiceSheet">
+        <!-- Centered Watermark (logo.png) -->
+        <div class="invoice-watermark" aria-hidden="true">
+          <img src="logo.png" alt="" />
+        </div>
+
+        <div class="invoice-content">
+          <!-- Top Header matching invoice_format.jpeg with full_logo.png -->
+          <header class="inv-header">
+            <div class="inv-logo-wrap">
+              <img src="full_logo.png" alt="Vital Health Solution" class="inv-full-logo" />
+            </div>
+            <p class="inv-company-bar">
+              <span id="outHeaderAddress">Icon Court, House No# 14, Block-B, Avenue-2, Chandrima Model Town, Mohammadpur, Dhaka-1207, Bangladesh</span>
+              <br />
+              <span>&#9742; +88 01341-893323</span>,
+              <span>&#9993; info@vitalhealthsolutionbd.com</span>,
+              <span>&#127760; www.vitalhealthsolutionbd.com</span>
+            </p>
+            <div class="inv-subtitle">PHARMACEUTICAL PRODUCTS</div>
+            <div class="inv-title-box">SALES INVOICE</div>
+          </header>
+
+          <!-- Three-Column Metadata Block matching invoice_format.jpeg structure with info_sample.xlsx fields -->
+          <section class="inv-meta-section">
+            <!-- Left Column: Seller Details & Bill To / Customer Details -->
+            <div class="inv-meta-col inv-meta-left">
+              <div class="inv-block">
+                <div class="inv-block-title">Seller Details</div>
+                <div class="inv-block-body">
+                  <div class="inv-line-strong" id="outSellerCompany">Vital Health Solution</div>
+                  <div class="inv-line-text" id="outSellerAddress">
+                    Icon Court, House No# 14, Block-B, Avenue-2, Chandrima Model Town, Mohammadpur, Dhaka-1207, Bangladesh
+                  </div>
+                  <div class="inv-line-text" id="outSellerContact">
+                    +88 01341-893323 | info@vitalhealthsolutionbd.com
+                  </div>
+                  <div class="inv-line-text">
+                    <strong>VAT/BIN No.:</strong> <span id="outSellerVatBin">N/A</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="inv-block inv-block-customer">
+                <div class="inv-block-title">Bill To / Customer Details</div>
+                <div class="inv-block-body">
+                  <div class="inv-kv-row">
+                    <span class="inv-kv-label">Customer / Institution:</span>
+                    <span class="inv-kv-val inv-line-strong" id="outCustomerName">—</span>
+                  </div>
+                  <div class="inv-kv-row">
+                    <span class="inv-kv-label">Address:</span>
+                    <span class="inv-kv-val" id="outCustomerAddress">—</span>
+                  </div>
+                  <div class="inv-kv-row">
+                    <span class="inv-kv-label">Contact / VAT-BIN:</span>
+                    <span class="inv-kv-val" id="outCustomerContact">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Invoice Details (aligned like invoice_format.jpeg) -->
+            <div class="inv-meta-col inv-meta-right">
+              <div class="inv-block">
+                <div class="inv-block-title">Invoice Details</div>
+                <table class="inv-details-table">
+                  <tbody>
+                    <tr>
+                      <td class="label-cell">Invoice No.:</td>
+                      <td class="val-cell inv-line-strong" id="outInvoiceNo">INV-2026-001</td>
+                    </tr>
+                    <tr>
+                      <td class="label-cell">Invoice Date:</td>
+                      <td class="val-cell" id="outInvoiceDate">08-11-2026</td>
+                    </tr>
+                    <tr>
+                      <td class="label-cell">Payment Terms:</td>
+                      <td class="val-cell" id="outPaymentTerms">Cash / Bank Transfer</td>
+                    </tr>
+                    <tr>
+                      <td class="label-cell">Currency:</td>
+                      <td class="val-cell" id="outCurrency">BDT (৳)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Print Timestamp above top-right of table (matching invoice_format.jpeg) -->
+          <div class="inv-table-top-bar">
+            <span class="inv-print-on"><strong>Print On:</strong> <span id="outPrintOn"></span></span>
+          </div>
+
+          <!-- Product Line Items Table (matching info_sample.xlsx columns & invoice_format.jpeg borders) -->
+          <section class="inv-table-section">
+            <table class="inv-items-table">
+              <thead>
+                <tr>
+                  <th class="col-sl">SL</th>
+                  <th class="col-desc">Product Name / Description</th>
+                  <th class="col-qty">Quantity</th>
+                  <th class="col-price">Unit Price (৳)</th>
+                  <th class="col-disc">Discount (৳)</th>
+                  <th class="col-total">Line Total (৳)</th>
+                </tr>
+              </thead>
+              <tbody id="outItemsTbody">
+                <!-- Populated dynamically by app.js -->
+              </tbody>
+            </table>
+
+            <!-- Totals Summary Block (matching info_sample.xlsx rows 32–37) -->
+            <div class="inv-summary-wrapper">
+              <table class="inv-summary-table">
+                <tbody>
+                  <tr>
+                    <td class="sum-label">VAT Rate (%)</td>
+                    <td class="sum-val" id="outVatRate">0%</td>
+                  </tr>
+                  <tr>
+                    <td class="sum-label">Subtotal</td>
+                    <td class="sum-val" id="outSubtotal">0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="sum-label">VAT Amount</td>
+                    <td class="sum-val" id="outVatAmount">0.00</td>
+                  </tr>
+                  <tr class="grand-total-row">
+                    <td class="sum-label">Grand Total (৳)</td>
+                    <td class="sum-val" id="outGrandTotal">0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="sum-label">Amount Paid</td>
+                    <td class="sum-val" id="outAmountPaid">0.00</td>
+                  </tr>
+                  <tr class="balance-due-row">
+                    <td class="sum-label">Balance Due (৳)</td>
+                    <td class="sum-val" id="outBalanceDue">0.00</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Amount in Words & Notes (matching invoice_format.jpeg & info_sample.xlsx rows 39-41) -->
+          <section class="inv-words-notes">
+            <div class="inv-words-row">
+              <span class="inv-wn-label">In Words:</span>
+              <span class="inv-wn-val" id="outAmountInWords">Zero Taka Only</span>
+            </div>
+            <div class="inv-notes-row">
+              <span class="inv-wn-label">Notes:</span>
+              <span class="inv-wn-val" id="outNotes">
+                Please verify product details, prices, VAT rate and applicable tax requirements before issuing.
+              </span>
+            </div>
+          </section>
+
+          <!-- Bottom Signatures & Registered Office Footer (matching invoice_format.jpeg & info_sample.xlsx) -->
+          <footer class="inv-footer">
+            <div class="inv-signatures">
+              <div class="inv-sig-block">
+                <div class="inv-sig-line">Customer Signature</div>
+              </div>
+              <div class="inv-sig-block">
+                <div class="inv-sig-line">Authorized Signature</div>
+              </div>
+            </div>
+
+            <div class="inv-bottom-office">
+              <p>
+                Registered Office: Icon Court, House No# 14, Block-B, Avenue-2, Chandrima Model Town, Mohammadpur, Dhaka-1207, Bangladesh
+              </p>
+              <p>
+                PH: +88 01341-893323, Email: info@vitalhealthsolutionbd.com, Web: www.vitalhealthsolutionbd.com
+              </p>
+              <p class="inv-page-num">Page 1 of 1</p>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+
