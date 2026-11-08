@@ -233,13 +233,14 @@
     </aside>
 
     <!-- Right Area: Live A4 Invoice Sheet Preview & Print Target -->
-    <main class="preview-workspace">
+    <main class="preview-workspace" id="previewWorkspace">
       <div class="preview-toolbar no-print">
         <span class="preview-status">Live A4 Print Preview</span>
         <span class="preview-tip">Tip: In the Print dialog, set Margins to "Default" or "None" and enable "Background graphics".</span>
       </div>
 
-      <div class="invoice-sheet" id="invoiceSheet">
+      <div class="invoice-scale-wrapper" id="invoiceScaleWrapper">
+        <div class="invoice-sheet" id="invoiceSheet">
         <!-- Centered Watermark (logo.png) -->
         <div class="invoice-watermark" aria-hidden="true">
           <img src="logo.png" alt="" />
@@ -421,6 +422,7 @@
             </div>
           </footer>
         </div>
+      </div>
       </div>
     </main>
   </div>

@@ -43,7 +43,9 @@ body {
 
 @media (max-width: 1280px) {
   .app-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }
 
@@ -57,6 +59,8 @@ body {
   position: sticky;
   top: 0;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
 }
 
 @media (max-width: 1280px) {
@@ -323,6 +327,17 @@ select:focus {
   text-align: center;
 }
 
+.li-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.li-field-total {
+  align-items: flex-end;
+  justify-content: center;
+}
+
 .line-item-row input {
   padding: 6px 7px;
   font-size: 12.5px;
@@ -368,6 +383,9 @@ select:focus {
   flex-direction: column;
   align-items: center;
   overflow-x: auto;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
 }
 
 .preview-toolbar {
@@ -388,7 +406,13 @@ select:focus {
   letter-spacing: 0.05em;
 }
 
-/* --- The A4 Sheet --- */
+/* --- The A4 Sheet & Scale Wrapper --- */
+.invoice-scale-wrapper {
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
 .invoice-sheet {
   width: var(--sheet-width);
   min-height: var(--sheet-min-height);
@@ -721,6 +745,192 @@ select:focus {
 }
 
 /* ==========================================================================
+   Mobile & Tablet Responsive Styles
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .editor-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  .editor-body {
+    padding: 12px 14px 20px;
+    gap: 12px;
+  }
+
+  .form-card {
+    padding: 12px;
+  }
+
+  .preview-workspace {
+    padding: 14px 12px 28px;
+    overflow-x: hidden;
+  }
+
+  .preview-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .editor-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .editor-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 8px;
+  }
+
+  .editor-actions .btn {
+    width: 100%;
+    padding: 9px 12px;
+  }
+
+  .form-grid.two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .label-with-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Hide desktop table column headers; show stacked cards per line item */
+  .line-items-editor-header {
+    display: none;
+  }
+
+  .line-items-container {
+    gap: 10px;
+  }
+
+  .line-item-row {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #f8fafc;
+  }
+
+  .line-item-row .sl-badge {
+    grid-row: 1;
+    grid-column: 1 / 2;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    align-self: end;
+    margin-bottom: 5px;
+  }
+
+  .line-item-row .li-field::before {
+    content: attr(data-label);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ui-muted);
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .line-item-row .li-field-name {
+    grid-row: 1;
+    grid-column: 2 / 12;
+  }
+
+  .line-item-row .btn-icon-remove {
+    grid-row: 1;
+    grid-column: 12 / 13;
+    justify-self: end;
+    align-self: end;
+    height: 32px;
+    width: 28px;
+  }
+
+  .line-item-row .li-field-qty {
+    grid-column: span 3;
+  }
+
+  .line-item-row .li-field-price {
+    grid-column: span 3;
+  }
+
+  .line-item-row .li-field-disc {
+    grid-column: span 3;
+  }
+
+  .line-item-row .li-field-total {
+    grid-column: span 3;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .line-item-row .row-line-total {
+    padding: 7px 2px;
+    font-size: 13px;
+  }
+
+  .line-item-row input {
+    padding: 7px 8px;
+    font-size: 14px; /* Prevents iOS auto-zoom on focus */
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .line-item-row .sl-badge {
+    grid-row: 1;
+    grid-column: 1 / 2;
+  }
+
+  .line-item-row .li-field-name {
+    grid-row: 1;
+    grid-column: 2 / 11;
+  }
+
+  .line-item-row .btn-icon-remove {
+    grid-row: 1;
+    grid-column: 11 / 13;
+  }
+
+  .line-item-row .li-field-qty,
+  .line-item-row .li-field-price,
+  .line-item-row .li-field-disc,
+  .line-item-row .li-field-total {
+    grid-column: span 6;
+  }
+}
+
+/* ==========================================================================
    Print Media Rules (Clean Single-Page A4 Invoice)
    ========================================================================== */
 
@@ -752,11 +962,18 @@ select:focus {
     display: block !important;
   }
 
+  .invoice-scale-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
   .invoice-sheet {
     width: 100% !important;
     min-height: 278mm !important;
     box-shadow: none !important;
     padding: 4mm 6mm !important;
     margin: 0 !important;
+    transform: none !important;
   }
 }

@@ -229,6 +229,9 @@
       slBadge.className = "sl-badge";
       slBadge.textContent = index + 1;
 
+      const nameWrap = document.createElement("div");
+      nameWrap.className = "li-field li-field-name";
+      nameWrap.setAttribute("data-label", "Product Name / Description");
       const nameInput = document.createElement("input");
       nameInput.type = "text";
       nameInput.placeholder = "Enter product name / description";
@@ -238,7 +241,11 @@
         item.name = e.target.value;
         updateInvoicePreview();
       });
+      nameWrap.appendChild(nameInput);
 
+      const qtyWrap = document.createElement("div");
+      qtyWrap.className = "li-field li-field-qty";
+      qtyWrap.setAttribute("data-label", "Qty");
       const qtyInput = document.createElement("input");
       qtyInput.type = "number";
       qtyInput.min = "0";
@@ -251,7 +258,11 @@
         rowTotalSpan.textContent = formatMoney(computeRowTotal(item));
         updateInvoicePreview();
       });
+      qtyWrap.appendChild(qtyInput);
 
+      const priceWrap = document.createElement("div");
+      priceWrap.className = "li-field li-field-price";
+      priceWrap.setAttribute("data-label", "Unit Price (৳)");
       const priceInput = document.createElement("input");
       priceInput.type = "number";
       priceInput.min = "0";
@@ -264,7 +275,11 @@
         rowTotalSpan.textContent = formatMoney(computeRowTotal(item));
         updateInvoicePreview();
       });
+      priceWrap.appendChild(priceInput);
 
+      const discWrap = document.createElement("div");
+      discWrap.className = "li-field li-field-disc";
+      discWrap.setAttribute("data-label", "Discount (৳)");
       const discInput = document.createElement("input");
       discInput.type = "number";
       discInput.min = "0";
@@ -277,10 +292,15 @@
         rowTotalSpan.textContent = formatMoney(computeRowTotal(item));
         updateInvoicePreview();
       });
+      discWrap.appendChild(discInput);
 
+      const totalWrap = document.createElement("div");
+      totalWrap.className = "li-field li-field-total";
+      totalWrap.setAttribute("data-label", "Total (৳)");
       const rowTotalSpan = document.createElement("span");
       rowTotalSpan.className = "row-line-total";
       rowTotalSpan.textContent = formatMoney(computeRowTotal(item));
+      totalWrap.appendChild(rowTotalSpan);
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -301,11 +321,11 @@
       });
 
       row.appendChild(slBadge);
-      row.appendChild(nameInput);
-      row.appendChild(qtyInput);
-      row.appendChild(priceInput);
-      row.appendChild(discInput);
-      row.appendChild(rowTotalSpan);
+      row.appendChild(nameWrap);
+      row.appendChild(qtyWrap);
+      row.appendChild(priceWrap);
+      row.appendChild(discWrap);
+      row.appendChild(totalWrap);
       row.appendChild(removeBtn);
 
       elLineItemsContainer.appendChild(row);
@@ -412,6 +432,40 @@
 
     // Notes
     outNotes.textContent = elInvoiceNotes.value.trim() || "—";
+
+    updatePreviewScale();
+  }
+
+  // --- Responsive A4 Preview Scaling for Mobile & Tablet Screens ---
+  function updatePreviewScale() {
+    const workspace = document.getElementById("previewWorkspace");
+    const wrapper = document.getElementById("invoiceScaleWrapper");
+    const sheet = document.getElementById("invoiceSheet");
+    if (!workspace || !wrapper || !sheet) return;
+
+    // Constrain wrapper first so workspace measures true viewport width
+    wrapper.style.width = "0px";
+    wrapper.style.height = "0px";
+    sheet.style.transform = "none";
+
+    const style = window.getComputedStyle(workspace);
+    const padLeft = parseFloat(style.paddingLeft) || 0;
+    const padRight = parseFloat(style.paddingRight) || 0;
+    const availableWidth = workspace.clientWidth - padLeft - padRight;
+    const naturalWidth = sheet.offsetWidth; // ~794px (210mm)
+    const naturalHeight = sheet.offsetHeight;
+
+    if (availableWidth > 0 && naturalWidth > 0 && availableWidth < naturalWidth) {
+      const scale = availableWidth / naturalWidth;
+      sheet.style.transformOrigin = "top left";
+      sheet.style.transform = `scale(${scale})`;
+      wrapper.style.width = `${Math.floor(naturalWidth * scale)}px`;
+      wrapper.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+    } else {
+      sheet.style.transform = "none";
+      wrapper.style.width = `${naturalWidth}px`;
+      wrapper.style.height = "auto";
+    }
   }
 
   // --- Event Listeners ---
@@ -469,6 +523,18 @@
       outPrintOn.textContent = formatPrintTimestamp();
       window.print();
     });
+
+    window.addEventListener("resize", updatePreviewScale);
+    window.addEventListener("beforeprint", () => {
+      const wrapper = document.getElementById("invoiceScaleWrapper");
+      const sheet = document.getElementById("invoiceSheet");
+      if (sheet) sheet.style.transform = "none";
+      if (wrapper) {
+        wrapper.style.width = "100%";
+        wrapper.style.height = "auto";
+      }
+    });
+    window.addEventListener("afterprint", updatePreviewScale);
 
     elBtnReset.addEventListener("click", () => {
       invoiceCounter += 1;
